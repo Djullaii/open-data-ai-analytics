@@ -1,0 +1,89 @@
+services:
+  data_load:
+    build: ./services/data_load
+    environment:
+      CSV_PATH: /app/data/sample_population.csv
+      DB_PATH: /app/db/population.db
+      REPORT_PATH: /app/reports/load_summary.json
+    volumes:
+      - ./data:/app/data:ro
+      - db_data:/app/db
+      - reports_data:/app/reports
+    networks:
+      - lab_net
+
+  data_quality_analysis:
+    build: ./services/data_quality_analysis
+    depends_on:
+      data_load:
+        condition: service_completed_successfully
+    environment:
+      DB_PATH: /app/db/population.db
+      REPORT_PATH: /app/reports/quality_report.json
+    volumes:
+      - db_data:/app/db
+      - reports_data:/app/reports
+    networks:
+      - lab_net
+
+  data_research:
+    build: ./services/data_research
+    depends_on:
+      data_load:
+        condition: service_completed_successfully
+    environment:
+      DB_PATH: /app/db/population.db
+      REPORT_PATH: /app/reports/research_report.json
+    volumes:
+      - db_data:/app/db
+      - reports_data:/app/reports
+    networks:
+      - lab_net
+
+  visualization:
+    build: ./services/visualization
+    depends_on:
+      data_research:
+        condition: service_completed_successfully
+    environment:
+      DB_PATH: /app/db/population.db
+      FIGURES_DIR: /app/reports/figures
+    volumes:
+      - db_data:/app/db
+      - reports_data:/app/reports
+    networks:
+      - lab_net
+
+  web:
+    build: ./web
+    depends_on:
+      data_quality_analysis:
+        condition: service_completed_successfully
+      data_research:
+        condition: service_completed_successfully
+      visualization:
+        condition: service_completed_successfully
+    environment:
+      DB_PATH: /app/db/population.db
+      REPORTS_DIR: /app/reports
+      PORT: 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - db_data:/app/db:ro
+      - reports_data:/app/reports:ro
+    networks:
+      - lab_net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  db_data:
+  reports_data:
+
+networks:
+  lab_net:
+

@@ -20,6 +20,37 @@
 - `src/data_quality_analysis.py` - перевірка якості даних.
 - `src/data_research.py` - базове дослідження та розрахунок показників.
 - `src/visualization.py` - побудова графіка за підготовленими даними.
+- `services/` - Docker-сервіси для запуску модулів у контейнерах.
+- `web/` - простий веб-інтерфейс для перегляду результатів.
+
+## Docker
+
+Запуск усіх сервісів:
+
+```powershell
+docker compose up --build
+```
+
+Веб-інтерфейс:
+
+```text
+http://localhost:8000
+```
+
+Сервіси:
+
+- `data_load` - читає `data/sample_population.csv`, створює SQLite БД і завантажує дані.
+- `data_quality_analysis` - перевіряє пропуски, дублікати, дати та значення.
+- `data_research` - рахує базову статистику.
+- `visualization` - створює два SVG-графіки.
+- `web` - показує дані, звіти і графіки в браузері.
+
+Порт: `8000`.
+
+Volumes:
+
+- `db_data` - база SQLite.
+- `reports_data` - JSON-звіти та SVG-графіки.
 
 ## Питання та гіпотези для аналізу
 
@@ -43,8 +74,11 @@ open-data-ai-analytics/
 ├── notebooks/
 ├── reports/
 │   └── figures/
+├── services/
 ├── src/
+├── web/
 ├── .gitignore
 ├── CHANGELOG.md
+├── compose.yaml
 └── README.md
 ```

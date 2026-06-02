@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.3.0 - 2026-06-02
+
+### Added
+
+- Додано Dockerfile для сервісів `data_load`, `data_quality_analysis`, `data_research`, `visualization` і `web`.
+- Додано `compose.yaml` для локального запуску всіх контейнерів.
+- Додано SQLite-базу через Docker volume.
+- Додано простий веб-інтерфейс на порту `8000`.
+- Додано приклад CSV-файлу для Docker-запуску.
+
 ## v0.2.0 - 2026-06-02
 
 ### Added
