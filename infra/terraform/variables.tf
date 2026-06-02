@@ -31,7 +31,7 @@ variable "ssh_public_key_path" {
 variable "vm_size" {
   description = "Linux VM size."
   type        = string
-  default     = "Standard_B1s"
+  default     = "Standard_D2s_v3"
 }
 
 variable "web_port" {
@@ -51,4 +51,3 @@ variable "repo_branch" {
   type        = string
   default     = "main"
 }
-
