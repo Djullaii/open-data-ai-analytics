@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.0 - 2026-06-02
+
+### Added
+
+- Додано GitHub Actions workflow для запуску модулів.
+- Додано workflow для ручного запуску на self-hosted runner.
+- Результати запуску зберігаються як artifacts.
+
 ## v0.1.0 - 2026-06-02
 
 ### Added

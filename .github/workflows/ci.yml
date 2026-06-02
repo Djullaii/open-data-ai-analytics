@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      module:
+        description: "module to run"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - data_load
+          - data_quality_analysis
+          - data_research
+          - visualization
+
+jobs:
+  modules:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - data_load
+          - data_quality_analysis
+          - data_research
+          - visualization
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prepare folders
+        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.module == 'all' || github.event.inputs.module == matrix.module }}
+        run: mkdir -p "artifacts/${{ matrix.module }}"
+
+      - name: Run data_load
+        if: ${{ matrix.module == 'data_load' && (github.event_name != 'workflow_dispatch' || github.event.inputs.module == 'all' || github.event.inputs.module == matrix.module) }}
+        run: |
+          python src/data_load.py \
+            --url "file://${PWD}/tests/fixtures/population_sample.csv" \
+            --raw-path "artifacts/data_load/population_raw.csv" \
+            --processed-path "artifacts/data_load/population.csv" \
+            > "artifacts/data_load/run.log" 2>&1
+
+      - name: Run data_quality_analysis
+        if: ${{ matrix.module == 'data_quality_analysis' && (github.event_name != 'workflow_dispatch' || github.event.inputs.module == 'all' || github.event.inputs.module == matrix.module) }}
+        run: |
+          python src/data_load.py \
+            --url "file://${PWD}/tests/fixtures/population_sample.csv" \
+            --raw-path "artifacts/data_quality_analysis/population_raw.csv" \
+            --processed-path "artifacts/data_quality_analysis/population.csv"
+          python src/data_quality_analysis.py \
+            --data-path "artifacts/data_quality_analysis/population.csv" \
+            --report-path "artifacts/data_quality_analysis/data_quality_report.json" \
+            > "artifacts/data_quality_analysis/run.log" 2>&1
+
+      - name: Run data_research
+        if: ${{ matrix.module == 'data_research' && (github.event_name != 'workflow_dispatch' || github.event.inputs.module == 'all' || github.event.inputs.module == matrix.module) }}
+        run: |
+          python src/data_load.py \
+            --url "file://${PWD}/tests/fixtures/population_sample.csv" \
+            --raw-path "artifacts/data_research/population_raw.csv" \
+            --processed-path "artifacts/data_research/population.csv"
+          python src/data_research.py \
+            --data-path "artifacts/data_research/population.csv" \
+            --report-path "artifacts/data_research/data_research_summary.json" \
+            > "artifacts/data_research/run.log" 2>&1
+
+      - name: Run visualization
+        if: ${{ matrix.module == 'visualization' && (github.event_name != 'workflow_dispatch' || github.event.inputs.module == 'all' || github.event.inputs.module == matrix.module) }}
+        run: |
+          python src/data_load.py \
+            --url "file://${PWD}/tests/fixtures/population_sample.csv" \
+            --raw-path "artifacts/visualization/population_raw.csv" \
+            --processed-path "artifacts/visualization/population.csv"
+          python src/visualization.py \
+            --data-path "artifacts/visualization/population.csv" \
+            --figure-path "artifacts/visualization/population_trend.svg" \
+            > "artifacts/visualization/run.log" 2>&1
+
+      - name: Upload artifacts
+        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.module == 'all' || github.event.inputs.module == matrix.module }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.module }}-artifacts
+          path: artifacts/${{ matrix.module }}

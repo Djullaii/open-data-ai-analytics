@@ -3,9 +3,9 @@ __pycache__/
 .venv/
 .env
 data/raw/
+artifacts/
 reports/figures/*.png
 reports/figures/*.jpg
 reports/figures/*.jpeg
 reports/figures/*.svg
 *.pyc
-

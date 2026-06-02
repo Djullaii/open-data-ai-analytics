@@ -1,0 +1,36 @@
+name: CI self-hosted
+
+on:
+  workflow_dispatch:
+
+jobs:
+  visualization-local:
+    runs-on: [self-hosted, Windows, X64]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check Python
+        shell: powershell
+        run: python --version
+
+      - name: Run visualization
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force -Path artifacts\visualization | Out-Null
+          $fixture = (Resolve-Path tests\fixtures\population_sample.csv).Path.Replace("\", "/")
+          python src\data_load.py `
+            --url "file:///$fixture" `
+            --raw-path artifacts\visualization\population_raw.csv `
+            --processed-path artifacts\visualization\population.csv
+          python src\visualization.py `
+            --data-path artifacts\visualization\population.csv `
+            --figure-path artifacts\visualization\population_trend.svg `
+            *> artifacts\visualization\run.log
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: visualization-selfhosted
+          path: artifacts/visualization
