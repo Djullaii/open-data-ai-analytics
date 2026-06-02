@@ -2,6 +2,7 @@ import html
 import json
 import os
 import sqlite3
+import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
@@ -9,6 +10,8 @@ from pathlib import Path
 DB_PATH = Path(os.getenv("DB_PATH", "/app/db/population.db"))
 REPORTS_DIR = Path(os.getenv("REPORTS_DIR", "/app/reports"))
 PORT = int(os.getenv("PORT", "8000"))
+START_TIME = time.time()
+REQUESTS_TOTAL = 0
 
 
 def read_json(name):
@@ -34,8 +37,35 @@ def rows_from_db():
     return rows
 
 
+def metrics_text(rows_count):
+    uptime = time.time() - START_TIME
+    return f"""# HELP open_data_web_requests_total Total HTTP requests handled by the web service.
+# TYPE open_data_web_requests_total counter
+open_data_web_requests_total {REQUESTS_TOTAL}
+# HELP open_data_web_uptime_seconds Web service uptime in seconds.
+# TYPE open_data_web_uptime_seconds gauge
+open_data_web_uptime_seconds {uptime:.0f}
+# HELP open_data_population_rows Number of rows available in the population table.
+# TYPE open_data_population_rows gauge
+open_data_population_rows {rows_count}
+"""
+
+
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
+        global REQUESTS_TOTAL
+        REQUESTS_TOTAL += 1
+
+        if self.path == "/metrics":
+            rows = rows_from_db()
+            data = metrics_text(len(rows)).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+            return
+
         quality = read_json("quality_report.json")
         research = read_json("research_report.json")
         rows = rows_from_db()
@@ -85,4 +115,3 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     HTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
-

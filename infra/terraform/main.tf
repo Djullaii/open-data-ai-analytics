@@ -16,7 +16,7 @@ provider "azurerm" {
 locals {
   tags = {
     project = "open-data-ai-analytics"
-    lab     = "lab4"
+    lab     = "lab5"
   }
 }
 
@@ -79,6 +79,30 @@ resource "azurerm_network_security_group" "lab" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
+
+  security_rule {
+    name                       = "Allow-Prometheus"
+    priority                   = 120
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = tostring(var.prometheus_port)
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "Allow-Grafana"
+    priority                   = 130
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = tostring(var.grafana_port)
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
 }
 
 resource "azurerm_network_interface" "lab" {
@@ -132,4 +156,3 @@ resource "azurerm_linux_virtual_machine" "lab" {
     version   = "latest"
   }
 }
-

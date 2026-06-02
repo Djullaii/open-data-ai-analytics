@@ -19,7 +19,6 @@ runcmd:
   - systemctl start docker
   - mkdir -p /opt/open-data-ai-analytics
   - git clone --branch ${repo_branch} ${repo_url} /opt/open-data-ai-analytics
-  - cd /opt/open-data-ai-analytics && docker compose up --build -d
+  - cd /opt/open-data-ai-analytics && docker compose -f compose.yaml -f compose.monitoring.yaml up --build -d
 
-final_message: "open-data-ai-analytics Docker stack is deployed"
-
+final_message: "open-data-ai-analytics Docker and monitoring stack is deployed"

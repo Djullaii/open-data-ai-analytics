@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.5.0 - 2026-06-03
+
+### Added
+
+- Додано monitoring compose-файл з Prometheus, Grafana, node-exporter та cAdvisor.
+- Додано Prometheus scrape targets для VM, Docker-контейнерів, Prometheus і веб-застосунку.
+- Додано `/metrics` endpoint у веб-сервіс для базових метрик застосунку.
+- Додано provisioning Grafana data source і dashboard `Open Data Monitoring`.
+- Оновлено Terraform і cloud-init для запуску monitoring stack в Azure.
+
 ## v0.4.0 - 2026-06-03
 
 ### Added

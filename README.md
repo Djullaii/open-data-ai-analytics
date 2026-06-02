@@ -52,6 +52,42 @@ Volumes:
 - `db_data` - база SQLite.
 - `reports_data` - JSON-звіти та SVG-графіки.
 
+## Monitoring
+
+Для лабораторної роботи з моніторингу додано окремий compose-файл:
+
+```powershell
+docker compose -f compose.yaml -f compose.monitoring.yaml up --build -d
+```
+
+Після запуску доступні сервіси:
+
+- `web` - веб-інтерфейс проєкту, порт `8000`, endpoint метрик `/metrics`.
+- `prometheus` - збір метрик, порт `9090`.
+- `grafana` - візуалізація метрик, порт `3000`, dashboard доступний для перегляду, логін адміністратора `admin`, пароль `admin`.
+- `node-exporter` - метрики Linux VM: CPU, пам'ять, диск, мережа.
+- `cadvisor` - метрики Docker-контейнерів.
+
+Адреси для локальної перевірки:
+
+```text
+http://localhost:8000
+http://localhost:8000/metrics
+http://localhost:9090/targets
+http://localhost:3000
+```
+
+Prometheus збирає метрики з таких job:
+
+- `prometheus` - стан самого Prometheus.
+- `node-exporter` - стан віртуальної машини.
+- `cadvisor` - стан Docker-контейнерів.
+- `web` - метрики застосунку `open_data_web_requests_total`, `open_data_web_uptime_seconds`, `open_data_population_rows`.
+
+Grafana налаштована через provisioning. Prometheus додається як data source автоматично, а dashboard
+`Open Data Monitoring` містить панелі для CPU VM, пам'яті VM, контейнерних метрик, CPU контейнерів
+та метрик застосунку.
+
 ## Azure Terraform
 
 Файли для розгортання у Microsoft Azure знаходяться в `infra/terraform/`.
@@ -77,12 +113,15 @@ terraform apply
 
 ```text
 http://PUBLIC_IP:8000
+http://PUBLIC_IP:9090
+http://PUBLIC_IP:3000
 ```
 
 Перевірка:
 
 ```bash
 curl http://PUBLIC_IP:8000
+curl http://PUBLIC_IP:8000/metrics
 ```
 
 Після демонстрації ресурси потрібно видалити:

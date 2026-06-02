@@ -13,8 +13,17 @@ output "web_url" {
   value       = "http://${azurerm_public_ip.lab.ip_address}:${var.web_port}"
 }
 
+output "prometheus_url" {
+  description = "URL of the Prometheus interface."
+  value       = "http://${azurerm_public_ip.lab.ip_address}:${var.prometheus_port}"
+}
+
+output "grafana_url" {
+  description = "URL of the Grafana interface."
+  value       = "http://${azurerm_public_ip.lab.ip_address}:${var.grafana_port}"
+}
+
 output "ssh_command" {
   description = "SSH command for checking the VM."
   value       = "ssh ${var.admin_username}@${azurerm_public_ip.lab.ip_address}"
 }
-

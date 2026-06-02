@@ -40,6 +40,18 @@ variable "web_port" {
   default     = 8000
 }
 
+variable "prometheus_port" {
+  description = "Public Prometheus port opened for lab demonstration."
+  type        = number
+  default     = 9090
+}
+
+variable "grafana_port" {
+  description = "Public Grafana port opened for lab demonstration."
+  type        = number
+  default     = 3000
+}
+
 variable "repo_url" {
   description = "Git repository cloned by cloud-init."
   type        = string
