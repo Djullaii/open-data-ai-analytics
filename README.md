@@ -52,6 +52,45 @@ Volumes:
 - `db_data` - база SQLite.
 - `reports_data` - JSON-звіти та SVG-графіки.
 
+## Azure Terraform
+
+Файли для розгортання у Microsoft Azure знаходяться в `infra/terraform/`.
+Конфігурація створює Resource Group, Virtual Network, Subnet, Public IP,
+Network Security Group, Network Interface і Linux VM. Під час першого запуску
+VM отримує `cloud-init.yaml`, встановлює Docker, клонує цей репозиторій і
+запускає Docker Compose.
+
+Запуск в Azure Cloud Shell:
+
+```bash
+cd infra/terraform
+cp terraform.tfvars.example terraform.tfvars
+test -f ~/.ssh/id_rsa.pub || ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
+terraform init
+terraform fmt
+terraform validate
+terraform plan
+terraform apply
+```
+
+Після `terraform apply` у виводі буде `web_url`, наприклад:
+
+```text
+http://PUBLIC_IP:8000
+```
+
+Перевірка:
+
+```bash
+curl http://PUBLIC_IP:8000
+```
+
+Після демонстрації ресурси потрібно видалити:
+
+```bash
+terraform destroy
+```
+
 ## Питання та гіпотези для аналізу
 
 1. Як змінювалась чисельність наявного населення України у періоді, представленому в наборі даних?
@@ -74,6 +113,8 @@ open-data-ai-analytics/
 ├── notebooks/
 ├── reports/
 │   └── figures/
+├── infra/
+│   └── terraform/
 ├── services/
 ├── src/
 ├── web/
