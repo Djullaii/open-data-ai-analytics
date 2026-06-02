@@ -46,12 +46,13 @@ def parse_portal_csv(text: str) -> list[dict[str, str]]:
             continue
 
         code, attribute, period, value = parts
+        normalized_value = value.replace(",", ".")
         rows.append(
             {
                 "code": code,
                 "attribute": attribute,
                 "period": period,
-                "value": value,
+                "value": normalized_value,
             }
         )
 
