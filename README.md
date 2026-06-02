@@ -46,6 +46,5 @@ open-data-ai-analytics/
 ├── src/
 ├── .gitignore
 ├── CHANGELOG.md
-├── README.md
-└── REPORT.md
+└── README.md
 ```
