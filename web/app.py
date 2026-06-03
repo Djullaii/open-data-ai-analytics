@@ -10,6 +10,7 @@ from pathlib import Path
 DB_PATH = Path(os.getenv("DB_PATH", "/app/db/population.db"))
 REPORTS_DIR = Path(os.getenv("REPORTS_DIR", "/app/reports"))
 PORT = int(os.getenv("PORT", "8000"))
+GITOPS_MESSAGE = os.getenv("GITOPS_MESSAGE", "Docker Compose deployment")
 START_TIME = time.time()
 REQUESTS_TOTAL = 0
 
@@ -48,6 +49,9 @@ open_data_web_uptime_seconds {uptime:.0f}
 # HELP open_data_population_rows Number of rows available in the population table.
 # TYPE open_data_population_rows gauge
 open_data_population_rows {rows_count}
+# HELP open_data_gitops_info Static GitOps deployment marker.
+# TYPE open_data_gitops_info gauge
+open_data_gitops_info{{message="{GITOPS_MESSAGE}"}} 1
 """
 
 
@@ -86,6 +90,10 @@ class Handler(BaseHTTPRequestHandler):
 </head>
 <body>
   <h1>Open Data AI Analytics</h1>
+  <section>
+    <h2>GitOps</h2>
+    <p>{html.escape(GITOPS_MESSAGE)}</p>
+  </section>
   <section>
     <h2>Дані</h2>
     <table><tr><th>Період</th><th>Значення</th></tr>{table_rows}</table>

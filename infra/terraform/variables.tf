@@ -1,7 +1,7 @@
 variable "resource_group_name" {
   description = "Azure resource group name for the lab."
   type        = string
-  default     = "rg-open-data-ai-lab4"
+  default     = "rg-open-data-ai-lab6"
 }
 
 variable "location" {
@@ -50,6 +50,18 @@ variable "grafana_port" {
   description = "Public Grafana port opened for lab demonstration."
   type        = number
   default     = 3000
+}
+
+variable "gitops_app_port" {
+  description = "Public NodePort for the GitOps-managed web application."
+  type        = number
+  default     = 30080
+}
+
+variable "argocd_port" {
+  description = "Public NodePort for the Argo CD HTTPS interface."
+  type        = number
+  default     = 30443
 }
 
 variable "repo_url" {

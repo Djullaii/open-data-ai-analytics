@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.6.0 - 2026-06-03
+
+### Added
+
+- Додано GitOps-структуру з Kubernetes manifest-файлами для web-застосунку.
+- Додано Argo CD Application для автоматичної синхронізації папки `gitops/app`.
+- Оновлено cloud-init для встановлення k3s, Argo CD та імпорту web-образу в k3s.
+- Додано GitOps-повідомлення у веб-інтерфейс для демонстрації update і rollback.
+- Оновлено Terraform outputs і NSG rules для GitOps NodePort та Argo CD.
+
 ## v0.5.0 - 2026-06-03
 
 ### Added

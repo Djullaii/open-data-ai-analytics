@@ -23,6 +23,16 @@ output "grafana_url" {
   value       = "http://${azurerm_public_ip.lab.ip_address}:${var.grafana_port}"
 }
 
+output "gitops_app_url" {
+  description = "URL of the GitOps-managed web application."
+  value       = "http://${azurerm_public_ip.lab.ip_address}:${var.gitops_app_port}"
+}
+
+output "argocd_url" {
+  description = "URL of the Argo CD interface."
+  value       = "https://${azurerm_public_ip.lab.ip_address}:${var.argocd_port}"
+}
+
 output "ssh_command" {
   description = "SSH command for checking the VM."
   value       = "ssh ${var.admin_username}@${azurerm_public_ip.lab.ip_address}"

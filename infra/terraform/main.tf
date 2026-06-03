@@ -16,7 +16,7 @@ provider "azurerm" {
 locals {
   tags = {
     project = "open-data-ai-analytics"
-    lab     = "lab5"
+    lab     = "lab6"
   }
 }
 
@@ -100,6 +100,30 @@ resource "azurerm_network_security_group" "lab" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = tostring(var.grafana_port)
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "Allow-GitOps-App"
+    priority                   = 140
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = tostring(var.gitops_app_port)
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "Allow-ArgoCD"
+    priority                   = 150
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = tostring(var.argocd_port)
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }

@@ -8,17 +8,47 @@ packages:
   - gnupg
   - git
 
-runcmd:
-  - install -m 0755 -d /etc/apt/keyrings
-  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-  - chmod a+r /etc/apt/keyrings/docker.gpg
-  - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" > /etc/apt/sources.list.d/docker.list
-  - apt-get update
-  - apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-  - systemctl enable docker
-  - systemctl start docker
-  - mkdir -p /opt/open-data-ai-analytics
-  - git clone --branch ${repo_branch} ${repo_url} /opt/open-data-ai-analytics
-  - cd /opt/open-data-ai-analytics && docker compose -f compose.yaml -f compose.monitoring.yaml up --build -d
+write_files:
+  - path: /usr/local/bin/open-data-lab6-bootstrap.sh
+    permissions: "0755"
+    content: |
+      #!/usr/bin/env bash
+      set -euxo pipefail
 
-final_message: "open-data-ai-analytics Docker and monitoring stack is deployed"
+      install -m 0755 -d /etc/apt/keyrings
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+      chmod a+r /etc/apt/keyrings/docker.gpg
+      . /etc/os-release
+      echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $VERSION_CODENAME stable" > /etc/apt/sources.list.d/docker.list
+      apt-get update
+      apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+      systemctl enable docker
+      systemctl start docker
+
+      rm -rf /opt/open-data-ai-analytics
+      git clone --branch ${repo_branch} ${repo_url} /opt/open-data-ai-analytics
+      cd /opt/open-data-ai-analytics
+
+      curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--write-kubeconfig-mode=644" sh -
+      export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+      kubectl get nodes
+
+      docker build -t open-data-ai-web:gitops ./web
+      docker save open-data-ai-web:gitops | k3s ctr images import -
+
+      kubectl create namespace argocd
+      kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+      kubectl wait --for=condition=available deployment --all -n argocd --timeout=600s
+      kubectl patch svc argocd-server -n argocd --type merge -p '{"spec":{"type":"NodePort","ports":[{"name":"http","port":80,"protocol":"TCP","targetPort":8080},{"name":"https","port":443,"protocol":"TCP","targetPort":8080,"nodePort":30443}]}}'
+      kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d > /opt/open-data-ai-analytics/argocd-password.txt
+      chmod 600 /opt/open-data-ai-analytics/argocd-password.txt
+
+      kubectl apply -f gitops/argocd/application.yaml
+      kubectl rollout status deployment/open-data-web -n open-data --timeout=300s || true
+
+      docker compose -f compose.yaml -f compose.monitoring.yaml up --build -d
+
+runcmd:
+  - /usr/local/bin/open-data-lab6-bootstrap.sh
+
+final_message: "open-data-ai-analytics GitOps, Argo CD, k3s, and monitoring stack are deployed"
