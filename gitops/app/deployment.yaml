@@ -25,7 +25,7 @@ spec:
             - name: PORT
               value: "8000"
             - name: GITOPS_MESSAGE
-              value: "GitOps release v1"
+              value: "GitOps release v2"
           readinessProbe:
             httpGet:
               path: /metrics
