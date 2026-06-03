@@ -37,14 +37,18 @@ write_files:
       docker save open-data-ai-web:gitops | k3s ctr images import -
 
       kubectl create namespace argocd
-      kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+      kubectl apply --server-side --force-conflicts -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
       kubectl wait --for=condition=available deployment --all -n argocd --timeout=600s
       kubectl patch svc argocd-server -n argocd --type merge -p '{"spec":{"type":"NodePort","ports":[{"name":"http","port":80,"protocol":"TCP","targetPort":8080},{"name":"https","port":443,"protocol":"TCP","targetPort":8080,"nodePort":30443}]}}'
       kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d > /opt/open-data-ai-analytics/argocd-password.txt
       chmod 600 /opt/open-data-ai-analytics/argocd-password.txt
 
       kubectl apply -f gitops/argocd/application.yaml
-      kubectl rollout status deployment/open-data-web -n open-data --timeout=300s || true
+      for i in $(seq 1 60); do
+        kubectl get deployment open-data-web -n open-data && break
+        sleep 10
+      done
+      kubectl rollout status deployment/open-data-web -n open-data --timeout=300s
 
       docker compose -f compose.yaml -f compose.monitoring.yaml up --build -d
 
